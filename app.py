@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # This finds the folder where app.py lives and looks for .env right there
 basedir = os.path.abspath(os.path.dirname(__file__))
 env_path = os.path.join(basedir, '.env')
-load_dotenv(dotenv_path=".env.local")  # Load .env.local for development
+load_dotenv(dotenv_path=".env.local")  # Load .env.local for development just pushing 
 
 print(f"DEBUG: Looking for .env at: {env_path}") # This will tell us WHERE it's looking
 print(f"DEBUG: Found Client Secret? {'Yes' if os.getenv('CLIENT_SECRET') else 'No'}")
