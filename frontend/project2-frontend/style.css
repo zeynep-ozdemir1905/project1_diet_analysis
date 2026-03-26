@@ -1,0 +1,88 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f1f3f6;
+}
+
+/* Header */
+.header {
+    background-color: #1976d2;
+    color: white;
+    padding: 15px 20px;
+    font-size: 24px;
+}
+
+/* Charts Section */
+.charts-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    justify-content: space-around;
+}
+
+.chart-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    width: 22%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Filters Section */
+.filters-section {
+    padding: 20px;
+}
+
+.filters-section input,
+.filters-section select {
+    padding: 8px;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* API Buttons */
+.api-section {
+    padding: 20px;
+}
+
+.btn {
+    padding: 10px 15px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-blue { background-color: #1976d2; }
+.btn-green { background-color: #388e3c; }
+.btn-purple { background-color: #7b1fa2; }
+
+/* Pagination */
+.pagination-section {
+    padding: 20px;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ccc;
+    cursor: pointer;
+}
+
+.pagination-btn.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+/* Footer */
+footer {
+    background-color: #1976d2;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}

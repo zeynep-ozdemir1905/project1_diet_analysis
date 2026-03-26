@@ -1,0 +1,6 @@
+pandas
+matplotlib
+seaborn
+azure-functions
+azure-storage-blob
+

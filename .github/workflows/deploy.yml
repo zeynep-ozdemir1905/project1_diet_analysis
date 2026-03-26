@@ -1,0 +1,23 @@
+name: Simulated Deployment CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t diet-analysis-app:latest .
+
+      - name: Start Simulation
+        run: |
+          docker-compose up -d
+          echo "Deployment successful. Current running containers:"
+          docker ps

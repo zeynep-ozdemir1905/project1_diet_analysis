@@ -1,0 +1,7 @@
+venv/
+__blobstorage__/
+__queuestorage__/
+simulated_nosql/
+__azurite_db*
+*.json
+*.png

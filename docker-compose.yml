@@ -1,0 +1,7 @@
+version: "3.8"
+
+services:
+  dite-analysis:
+    image: diet-analysis-app
+    container_name: diet-analysis-container
+    command: python data_analysis.py
