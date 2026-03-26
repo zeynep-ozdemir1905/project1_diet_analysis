@@ -3,12 +3,15 @@ import requests
 import redis
 from flask import Flask, redirect, request, jsonify, send_from_directory
 from flask_cors import CORS
-from dotenv import load_dotenv # Highly recommended: pip install python-dotenv
+from dotenv import load_dotenv
 
-# Load variables from .env file if it exists
-load_dotenv()
+# This finds the folder where app.py lives and looks for .env right there
+basedir = os.path.abspath(os.path.dirname(__file__))
+env_path = os.path.join(basedir, '.env')
+load_dotenv(dotenv_path=".env.local")  # Load .env.local for development
 
-# 1. Initialize Flask and allow CORS
+print(f"DEBUG: Looking for .env at: {env_path}") # This will tell us WHERE it's looking
+print(f"DEBUG: Found Client Secret? {'Yes' if os.getenv('CLIENT_SECRET') else 'No'}")
 app = Flask(__name__, static_folder='frontend/project2-frontend')
 CORS(app)
 
