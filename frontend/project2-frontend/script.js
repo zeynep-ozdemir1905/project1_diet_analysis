@@ -12,7 +12,7 @@ const dietColors = [
     'rgba(255, 159, 64, 0.8)'   // Orange (Other)
 ];
 
-// --- AUTH UI TOGGLE HELPER ---
+// --- AUTH UI TOGGLE HELPER --- script.js just for push
 // This handles the UX by showing/hiding buttons based on login status
 function updateAuthUI(isLoggedIn) {
     const loginBtn = document.getElementById("loginBtn");
