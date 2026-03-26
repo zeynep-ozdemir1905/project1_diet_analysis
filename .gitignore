@@ -1,5 +1,6 @@
 # Security
 .env
+.env.local
 
 # Environments and Python
 venv/
