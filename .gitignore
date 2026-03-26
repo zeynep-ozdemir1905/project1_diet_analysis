@@ -1,7 +1,17 @@
+# Security
+.env
+
+# Environments and Python
 venv/
+__pycache__/
+*.pyc
+
+# Local Storage and Databases
 __blobstorage__/
 __queuestorage__/
 simulated_nosql/
 __azurite_db*
+
+# Data and Media
 *.json
 *.png
