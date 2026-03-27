@@ -1,105 +1,123 @@
 /* General Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modernized font */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     background-color: #f1f3f6;
     color: #333;
+    /* This ensures content doesn't get hidden under the sticky header */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-/* Header & Auth Section style css just for push */
-.header {
+/* Header & Auth Section - FIXED: Sticky position */
+header {
     background-color: #1976d2;
     color: white;
-    padding: 10px 40px;
+    padding: 0 40px;
+    height: 70px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
 }
 
 #authSection {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-#loginBtn, #logoutBtn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: transform 0.2s, background 0.2s;
-}
-
-#loginBtn {
-    background-color: #24292e; /* GitHub Black */
-    color: white;
+    gap: 15px;
 }
 
 #logoutBtn {
-    background-color: #d32f2f; /* Error/Logout Red */
+    background-color: #d32f2f;
     color: white;
-    display: none; /* Controlled by script.js */
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
 }
 
-#loginBtn:hover, #logoutBtn:hover {
+#logoutBtn:hover {
+    background-color: #b71c1c;
     transform: translateY(-1px);
-    filter: brightness(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* Charts Section - Fixed Alignment */
 .charts-section {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    padding: 25px;
-    justify-content: center; /* Center cards for better UI balance */
+    gap: 25px;
+    padding: 30px;
+    justify-content: center;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .chart-card {
     background-color: white;
-    padding: 20px;
-    border-radius: 12px;
-    width: calc(45% - 40px); /* Two cards per row with space */
-    min-width: 350px;
-    height: 400px; /* FIXED: Explicit height prevents chart overflow */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 25px;
+    border-radius: 16px;
+    /* Three cards per row on large screens, stacks on small */
+    width: 30%; 
+    min-width: 380px;
+    height: 420px; 
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
     display: flex;
     flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+.chart-card:hover {
+    transform: translateY(-5px);
 }
 
 .chart-card h3 {
-    margin-top: 0;
-    font-size: 18px;
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
     color: #1976d2;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
 }
 
-/* This container ensures the canvas stays inside the card */
-.chart-card canvas {
+/* Container to ensure the canvas stays inside the card */
+.chart-container {
     flex-grow: 1;
-    width: 100% !important;
-    height: 100% !important;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 /* Filters Section */
 .filters-section {
-    padding: 20px;
+    padding: 25px;
     text-align: center;
     background: white;
-    margin: 0 25px;
-    border-radius: 8px;
+    margin: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .filters-section select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
     outline: none;
+    width: 250px;
+    cursor: pointer;
 }
 
 /* API Buttons */
@@ -108,28 +126,31 @@ body {
     display: flex;
     justify-content: center;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .btn {
-    padding: 12px 20px;
+    padding: 14px 28px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
     font-weight: bold;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.btn:hover { opacity: 0.9; }
+.btn:active { transform: scale(0.96); }
 .btn-blue { background-color: #1976d2; }
 .btn-green { background-color: #388e3c; }
 .btn-purple { background-color: #7b1fa2; }
 
 /* Footer */
 footer {
-    background-color: #1976d2;
+    background-color: #263238;
     color: white;
-    padding: 15px;
+    padding: 20px;
     text-align: center;
-    margin-top: 40px;
+    margin-top: auto; /* Pushes footer to bottom */
 }
