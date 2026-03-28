@@ -16,3 +16,4 @@ __azurite_db*
 # Data and Media
 *.json
 *.png
+.local_settings.json

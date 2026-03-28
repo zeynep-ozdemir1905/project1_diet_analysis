@@ -1,7 +1,8 @@
-// 1. Point to your LOCAL Flask server for Phase 3 Security
-const API_URL = "http://127.0.0.1:3000/api/analyze_data";
+// 1. Point to your LOCAL Flask server
+const BASE_API = "http://127.0.0.1:3000/api";
+const API_URL = `${BASE_API}/diet_results`; // High-speed Redis endpoint
 
-let barChart, scatterChart, pieChart, heatmapChart;
+let barChart, scatterChart, pieChart;
 
 const dietColors = [
     'rgba(255, 99, 132, 0.8)',  // Pink (Dash)
@@ -9,106 +10,108 @@ const dietColors = [
     'rgba(255, 206, 86, 0.8)',  // Yellow (Mediterranean)
     'rgba(75, 192, 192, 0.8)',  // Teal (Paleo)
     'rgba(153, 102, 255, 0.8)', // Purple (Vegan)
-    'rgba(255, 159, 64, 0.8)'   // Orange (Other)
 ];
 
-// --- AUTH UI TOGGLE HELPER --- script.js just for push
-// This handles the UX by showing/hiding buttons based on login status
+// --- AUTH UI TOGGLE HELPER ---
 function updateAuthUI(isLoggedIn) {
-    const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
-
-    if (isLoggedIn) {
-        if (loginBtn) loginBtn.style.display = "none";
-        if (logoutBtn) logoutBtn.style.display = "flex"; 
-    } else {
-        if (loginBtn) loginBtn.style.display = "flex"; 
-        if (logoutBtn) logoutBtn.style.display = "none";
-    }
+    if (logoutBtn) logoutBtn.style.display = isLoggedIn ? "flex" : "none";
 }
 
-// Fetch data through Local Backend (Flask)
+// --- MAIN FETCH DATA (CHARTS) ---
 async function fetchAPIData() {
-    const statusDiv = document.getElementById("executionTime");
-    const chartsContainer = document.getElementById("chartsContainer"); 
+    const statusDiv = document.getElementById("displayContent");
+    const resultsSection = document.getElementById("resultsDisplay");
     
-    if (statusDiv) statusDiv.innerHTML = "<span style='color: #007BFF;'>Verifying Security Handshake...</span>";
-    
-    const startTime = performance.now(); 
     try {
         const response = await fetch(API_URL);
 
-        // 2. Security Check: If unauthorized (401), lock the UI and show Login button
         if (response.status === 401) {
-            updateAuthUI(false);
-            if (chartsContainer) {
-                chartsContainer.style.opacity = "0.2";
-                chartsContainer.style.pointerEvents = "none";
-            }
-            if (statusDiv) statusDiv.innerHTML = "<span style='color:red;'>⚠️ Access Denied: Please Login with GitHub to view insights.</span>";
+            window.location.href = "login.html";
             return;
         }
 
-        // 3. Authorized: Show Logout button and process data
         const apiData = await response.json();
+
+        // Handle the "Pending" state if the Blob Trigger hasn't run yet
+        if (apiData.status === "pending") {
+            resultsSection.style.display = "block";
+            statusDiv.innerText = apiData.message;
+            return;
+        }
+
         updateAuthUI(true);
 
-        const data = Object.keys(apiData).map(diet => {
-            const entry = apiData[diet];
-            return {
-                Diet_type: diet.charAt(0).toUpperCase() + diet.slice(1),
-                Protein: entry["Protein(g)"] || entry["protein(g)"] || 0,
-                Carbs: entry["Carbs(g)"] || entry["carbs(g)"] || 0,
-                Fat: entry["Fat(g)"] || entry["fat(g)"] || 0
-            };
-        });
-
-        // Restore UI Visibility
-        if (chartsContainer) {
-            chartsContainer.style.opacity = "1";
-            chartsContainer.style.pointerEvents = "auto";
-        }
+        const data = Object.keys(apiData).map(diet => ({
+            Diet_type: diet.charAt(0).toUpperCase() + diet.slice(1),
+            Protein: apiData[diet]["Protein(g)"] || 0,
+            Carbs: apiData[diet]["Carbs(g)"] || 0,
+            Fat: apiData[diet]["Fat(g)"] || 0
+        }));
 
         renderCharts(data);
 
-        const endTime = performance.now();
-        const execTime = (endTime - startTime).toFixed(2);
-        if (statusDiv) statusDiv.innerText = `Success! Execution Time: ${execTime} ms`;
-
     } catch (error) {
         console.error("Error fetching API data:", error);
-        updateAuthUI(false);
-        if (statusDiv) statusDiv.innerHTML = "<span style='color: red;'>Error: Authentication server offline. Run 'python app.py'</span>";
+        resultsSection.style.display = "block";
+        statusDiv.innerHTML = "Error: Backend server offline. Run 'python app.py'";
     }
 }
 
-// --- RENDER CHARTS LOGIC ---
+// --- NEW: FETCH EXTRA DATA (RECIPES & CLUSTERS) ---
+async function fetchExtraData(endpoint, title) {
+    const resultsSection = document.getElementById("resultsDisplay");
+    const displayTitle = document.getElementById("displayTitle");
+    const displayContent = document.getElementById("displayContent");
+
+    try {
+        const response = await fetch(`${BASE_API}/${endpoint}`);
+        
+        if (response.status === 401) {
+            alert("Session expired. Please log in again.");
+            return;
+        }
+
+        const data = await response.json();
+        
+        resultsSection.style.display = "block";
+        displayTitle.innerText = title;
+        
+        // Show the data in a clean JSON format
+        displayContent.innerText = JSON.stringify(data, null, 2);
+        
+        // Scroll to the results
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+        alert("Could not fetch " + title + ". Is the server running?");
+    }
+}
+
+// --- RENDER CHARTS ---
 function renderCharts(data) {
     if(barChart) barChart.destroy();
     if(scatterChart) scatterChart.destroy();
     if(pieChart) pieChart.destroy();
-    if(heatmapChart) heatmapChart.destroy();
 
     const labels = data.map(d => d.Diet_type);
 
     // Bar Chart
-    const barCtx = document.getElementById('barChart').getContext('2d');
-    barChart = new Chart(barCtx, {
+    barChart = new Chart(document.getElementById('barChart'), {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Protein (g)',
+                label: 'Avg Protein (g)',
                 data: data.map(d => d.Protein),
                 backgroundColor: dietColors 
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
     // Scatter Chart
-    const scatterCtx = document.getElementById('scatterChart').getContext('2d');
-    scatterChart = new Chart(scatterCtx, {
+    scatterChart = new Chart(document.getElementById('scatterChart'), {
         type: 'scatter',
         data: {
             datasets: [{
@@ -117,65 +120,52 @@ function renderCharts(data) {
                 backgroundColor: 'rgba(123, 31, 162, 1)'
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: { title: { display: true, text: 'Protein (g)' } },
-                y: { title: { display: true, text: 'Carbs (g)' } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
     // Pie Chart
-    const pieCtx = document.getElementById('pieChart').getContext('2d');
-    pieChart = new Chart(pieCtx, {
+    pieChart = new Chart(document.getElementById('pieChart'), {
         type: 'pie',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Fat Distribution',
+                label: 'Avg Fat (g)',
                 data: data.map(d => d.Fat),
                 backgroundColor: dietColors
             }]
         },
         options: { responsive: true, maintainAspectRatio: false }
     });
-
-    renderHeatmap(data);
 }
 
-function renderHeatmap(data) {
-    console.log("Heatmap ready.");
-}
+// --- EVENT LISTENERS ---
+document.getElementById('getInsights').addEventListener('click', fetchAPIData);
 
-// --- FILTER & LISTENERS ---
 document.getElementById('dietFilter').addEventListener('change', async (e) => {
     const selected = e.target.value;
     const response = await fetch(API_URL);
-    if (response.status === 401) return; 
+    if (response.status !== 200) return;
     
     const apiData = await response.json();
     const allData = Object.keys(apiData).map(diet => ({
         Diet_type: diet,
-        Protein: apiData[diet]["Protein(g)"] || apiData[diet]["protein(g)"] || 0,
-        Carbs: apiData[diet]["Carbs(g)"] || apiData[diet]["carbs(g)"] || 0,
-        Fat: apiData[diet]["Fat(g)"] || apiData[diet]["fat(g)"] || 0
+        Protein: apiData[diet]["Protein(g)"] || 0,
+        Carbs: apiData[diet]["Carbs(g)"] || 0,
+        Fat: apiData[diet]["Fat(g)"] || 0
     }));
 
     if(selected === "All") renderCharts(allData);
     else renderCharts(allData.filter(d => d.Diet_type.toLowerCase() === selected.toLowerCase()));
 });
 
-document.getElementById('getInsights').addEventListener('click', fetchAPIData);
+// UPDATED: Now calling the actual backend routes
+document.getElementById('getRecipes').addEventListener('click', () => {
+    fetchExtraData('get_recipes', 'Top Protein Recipes (Performance Lead)');
+});
 
-// Placeholders for your other buttons
-if (document.getElementById('getRecipes')) {
-    document.getElementById('getRecipes').addEventListener('click', () => alert("Recipe generation coming soon!"));
-}
-if (document.getElementById('getClusters')) {
-    document.getElementById('getClusters').addEventListener('click', () => alert("Clustering logic triggered!"));
-}
+document.getElementById('getClusters').addEventListener('click', () => {
+    fetchExtraData('diet_results', 'Average Macros (Clustered by Diet)');
+});
 
-// Initial Trigger on page load
+// Initial Load
 fetchAPIData();
