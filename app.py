@@ -138,16 +138,28 @@ def get_macros():
     data = r.get("average_macros")
     return jsonify(json.loads(data)) if data else jsonify({"error": "No data"})
 
-@app.route('/api/top-recipes')
-def get_top_recipes():
-    # Fetch both top_5 and top_full from Redis
-    t5 = r.get("top_5_protein")
-    t_full = r.get("top_protein_full")
-    
-    return jsonify({
-        "top_5": json.loads(t5) if t5 else [],
-        "all_top": json.loads(t_full) if t_full else []
-    })
+@app.route('/api/get_recipes')
+def get_recipes():
+    data = r.get("top_protein_recipes")
+    return jsonify(json.loads(data)) if data else jsonify([])
+
+@app.route('/load-test-recipes')
+def load_test():
+    import json
+    test_data = [
+        {
+            "Recipe_name": "Meatballs Braised with Kale",
+            "Protein(g)": 531.48,
+            "Diet_type": "mediterranean"
+        },
+        {
+            "Recipe_name": "Grilled Chicken Bowl",
+            "Protein(g)": 420.12,
+            "Diet_type": "keto"
+        }
+    ]
+
+    r.set("top_protein_full", json.dumps(test_data))
+    return "Loaded!"
 if __name__ == "__main__":
-    # Standard development port 3000 as per your previous setup
     app.run(host='0.0.0.0', port=3000, debug=True)

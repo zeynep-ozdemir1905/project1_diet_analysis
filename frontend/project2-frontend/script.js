@@ -160,9 +160,8 @@ document.getElementById('dietFilter').addEventListener('change', async (e) => {
 
 // UPDATED: Now calling the actual backend routes
 document.getElementById('getRecipes').addEventListener('click', () => {
-    fetchExtraData('get_recipes', 'Top Protein Recipes (Performance Lead)');
+    window.location.href = "recipes.html";
 });
-
 document.getElementById('getClusters').addEventListener('click', () => {
     fetchExtraData('diet_results', 'Average Macros (Clustered by Diet)');
 });

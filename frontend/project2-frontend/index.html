@@ -153,11 +153,19 @@
         }
 
         // Event Listeners
-        document.getElementById('getInsights').addEventListener('click', () => fetchAnalytics());
-        document.getElementById('dietFilter').addEventListener('change', (e) => fetchAnalytics(e.target.value));
-        document.getElementById('getRecipes').addEventListener('click', () => fetchExtraData('get_recipes', 'Suggested Recipes'));
-        document.getElementById('getClusters').addEventListener('click', () => fetchExtraData('get_clusters', 'ML Data Clusters'));
+document.getElementById('getInsights').addEventListener('click', () => fetchAnalytics());
 
+document.getElementById('dietFilter').addEventListener('change', (e) => 
+    fetchAnalytics(e.target.value)
+);
+
+document.getElementById('getRecipes').addEventListener('click', () => {
+    window.location.href = "recipes.html";
+});
+
+document.getElementById('getClusters').addEventListener('click', () => 
+    fetchExtraData('get_clusters', 'ML Data Clusters')
+);
         // Initial Load
         fetchAnalytics();
     </script>
