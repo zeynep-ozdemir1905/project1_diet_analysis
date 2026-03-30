@@ -17,3 +17,7 @@ __azurite_db*
 *.json
 *.png
 .local_settings.json
+
+# OS files
+.DS_Store
+Thumbs.db

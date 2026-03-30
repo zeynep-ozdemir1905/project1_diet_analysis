@@ -138,28 +138,19 @@ def get_macros():
     data = r.get("average_macros")
     return jsonify(json.loads(data)) if data else jsonify({"error": "No data"})
 
+import csv # Make sure this is at the top of your app.py
+
 @app.route('/api/get_recipes')
-def get_recipes():
-    data = r.get("top_protein_recipes")
-    return jsonify(json.loads(data)) if data else jsonify([])
+def get_top_recipes():
+    try:
+        data = r.get("top_protein_full")
 
-@app.route('/load-test-recipes')
-def load_test():
-    import json
-    test_data = [
-        {
-            "Recipe_name": "Meatballs Braised with Kale",
-            "Protein(g)": 531.48,
-            "Diet_type": "mediterranean"
-        },
-        {
-            "Recipe_name": "Grilled Chicken Bowl",
-            "Protein(g)": 420.12,
-            "Diet_type": "keto"
-        }
-    ]
+        if data:
+            return jsonify(json.loads(data))
+        else:
+            return jsonify({"error": "No cached data yet"}), 404
 
-    r.set("top_protein_full", json.dumps(test_data))
-    return "Loaded!"
-if __name__ == "__main__":
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
