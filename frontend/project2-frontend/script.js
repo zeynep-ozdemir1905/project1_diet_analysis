@@ -58,7 +58,7 @@ async function fetchAPIData() {
     }
 }
 
-// --- NEW: FETCH EXTRA DATA (RECIPES & CLUSTERS) ---
+// --- FETCH EXTRA DATA (RECIPES & CLUSTERS) ---
 async function fetchExtraData(endpoint, title) {
     const resultsSection = document.getElementById("resultsDisplay");
     const displayTitle = document.getElementById("displayTitle");

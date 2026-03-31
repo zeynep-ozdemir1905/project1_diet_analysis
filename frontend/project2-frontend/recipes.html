@@ -13,7 +13,77 @@
 </header>
 
 <main style="padding:20px;">
-    <div id="recipesContainer"></div>
+    <div style="text-align:center; margin:20px;">
+    <input id="searchRecipe" placeholder="Search recipe..." style="padding:10px;">
+    <button onclick="fetchRecipes()">Search</button>
+</div>
+
+<div id="recipesContainer" style="padding:20px;"></div>
+
+<script>
+let allRecipes = [];
+
+// Load all recipes once
+async function loadRecipes() {
+    try {
+        const res = await fetch("/api/get_recipes");
+        const data = await res.json();
+
+        allRecipes = data;
+        displayRecipes(allRecipes);
+    } catch (err) {
+        console.error("Error loading recipes:", err);
+    }
+}
+
+// Override your existing fetchRecipes (JS-only search)
+function fetchRecipes() {
+    const query = document.getElementById("searchRecipe").value.toLowerCase();
+
+    const filtered = allRecipes.filter(r =>
+        r.Recipe_name.toLowerCase().includes(query)
+    );
+
+    displayRecipes(filtered);
+}
+
+// Override display to match your CSV fields
+function displayRecipes(recipes) {
+    const container = document.getElementById("recipesContainer");
+    container.innerHTML = "";
+
+    if (recipes.length === 0) {
+        container.innerText = "No recipes found";
+        return;
+    }
+
+    recipes.forEach(recipe => {
+        const recipeDiv = document.createElement("div");
+        recipeDiv.style.padding = "10px";
+        recipeDiv.style.border = "1px solid #ccc";
+        recipeDiv.style.margin = "10px 0";
+        recipeDiv.style.borderRadius = "8px";
+
+        recipeDiv.innerHTML = `
+            <h3>${recipe.Recipe_name}</h3>
+            <p>Protein: ${recipe["Protein(g)"]}</p>
+            <p>Diet: ${recipe.Diet_type}</p>
+        `;
+
+        container.appendChild(recipeDiv);
+    });
+}
+
+// Load data on page load
+loadRecipes();
+
+// Optional: search on Enter
+document.getElementById("searchRecipe").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        fetchRecipes();
+    }
+});
+</script>
 </main>
 
 <script src="recipesNEW.js"></script>

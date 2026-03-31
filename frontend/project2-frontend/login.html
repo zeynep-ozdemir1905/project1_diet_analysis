@@ -8,8 +8,12 @@
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
         .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 350px; }
         .logo { width: 60px; height: 60px; background: #007BFF; border-radius: 12px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; }
-        .btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #24292e; color: white; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; transition: 0.3s; }
-        .btn:hover { background: #000; transform: translateY(-2px); }
+        .btn { display: flex; align-items: center; justify-content: center; gap: 10px; color: white; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; transition: 0.3s; width: 100%; border: none; font-size: 1rem; cursor: pointer; }
+        .btn-github { background: #24292e; }
+        .btn-primary { background: #007BFF; margin-bottom: 10px; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 0.9rem; }
+        .divider { margin: 20px 0; color: #888; font-size: 0.8rem; position: relative; }
     </style>
 </head>
 <body>
@@ -17,10 +21,23 @@
         <div class="logo">🥗</div>
         <h1>Nutritional Insights</h1>
         <p>Login to access your dashboard.</p>
-        <a href="/login" class="btn">
+        
+        <form action="/login-email" method="POST">
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+        </form>
+
+        <div class="divider">— OR —</div>
+
+        <a href="/login" class="btn btn-github">
             <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="20" style="filter: invert(1);">
             Login with GitHub
         </a>
+        
+        <p style="margin-top: 20px; font-size: 0.85rem;">
+            Don't have an account? <a href="/register.html" style="color: #007BFF; text-decoration: none; font-weight: bold;">Sign Up</a>
+        </p>
     </div>
 </body>
 </html>

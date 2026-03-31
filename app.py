@@ -2,27 +2,28 @@ import os
 import requests
 import redis
 import json
+import csv
 from flask import Flask, redirect, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
+from azure.data.tables import TableClient
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- CONFIGURATION & ENV SETUP ---
-# This ensures we find the .env.local file in your project folder
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(dotenv_path=os.path.join(basedir, ".env.local")) 
 
 app = Flask(__name__, static_folder='frontend/project2-frontend')
 CORS(app)
 
-# GitHub Credentials (Pulled from .env.local)
+# GitHub Credentials
 CLIENT_ID = os.getenv("CLIENT_ID", "Ov23li2ew90EjCQGbYKi")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
-# Azure Redis Connection (Pulled from .env.local or fallback)
+# Azure Redis Connection
 REDIS_KEY = os.getenv("REDIS_KEY", "M6xAfWSvclkCtP2USeVMEad9VPx198N3rAzCaEcOYhk=")
 REDIS_HOST = 'diet-auth-cache-zeynep.redis.cache.windows.net'
 
-# Initialize Redis with SSL (Required for Azure Redis)
 r = redis.Redis(
     host=REDIS_HOST,
     port=6380,
@@ -31,11 +32,46 @@ r = redis.Redis(
     decode_responses=True
 )
 
+# Azure Table Connection
+conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+table_client = TableClient.from_connection_string(conn_str=conn_str, table_name="Users")
+
+# --- AUTHENTICATION ROUTES (Email/Password) ---
+
+@app.route('/login-email', methods=['POST'])
+def login_email():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    try:
+        user = table_client.get_entity(partition_key="User", row_key=email)
+        if check_password_hash(user['password'], password):
+            r.set(f"session:{email}", "active", ex=3600)
+            return redirect('/')
+        return "Invalid credentials", 401
+    except Exception:
+        return "User not found. Please register first.", 404
+    
+@app.route('/register-user', methods=['POST'])
+def register():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    hashed_password = generate_password_hash(password)
+    
+    user_entity = {
+        "PartitionKey": "User",
+        "RowKey": email,
+        "password": hashed_password
+    }
+    try:
+        table_client.create_entity(entity=user_entity)
+        return redirect('/login.html') 
+    except Exception as e:
+        return f"Error: {str(e)}", 400
+
 # --- PAGE ROUTES ---
 
 @app.route('/')
 def home():
-    # Check if any session key exists in Redis
     active_sessions = r.keys("session:*")
     if not active_sessions:
         return send_from_directory(app.static_folder, 'login.html')
@@ -70,7 +106,6 @@ def callback():
     if not access_token:
         return "Authentication Failed", 400
 
-    # Get User Info from GitHub
     user_resp = requests.get(
         "https://api.github.com/user", 
         headers={"Authorization": f"Bearer {access_token}"}
@@ -79,7 +114,6 @@ def callback():
     username = user_data.get('login')
     
     if username:
-        # Store session in Redis for 1 hour
         r.set(f"session:{username}", "active", ex=3600)
     
     return redirect('/')
@@ -93,7 +127,27 @@ def logout():
 
 # --- DATA & PERFORMANCE ROUTES ---
 
-@app.route('/api/diet_results')
+@app.route('/api/get_recipes')
+def get_top_recipes():
+    try:
+        # First try Redis
+        data = r.get("top_protein_full")
+        if data:
+            return jsonify(json.loads(data))
+        
+        # Fallback to local CSV if Redis is empty
+        recipes = []
+        csv_path = os.path.join(basedir, 'top_protein_recipes.csv')
+        with open(csv_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                recipes.append(row)
+        return jsonify(recipes)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/analyze_data')
 def get_performance_stats():
     """
     Performance Lead Task: Fetch pre-calculated data from Redis.
@@ -132,25 +186,11 @@ def protected_data():
     except:
         return jsonify({"error": "External API unreachable"}), 502
 
+
 @app.route('/api/macros')
 def get_macros():
-    # This replaces the need for average_macros.csv
     data = r.get("average_macros")
     return jsonify(json.loads(data)) if data else jsonify({"error": "No data"})
 
-import csv # Make sure this is at the top of your app.py
-
-@app.route('/api/get_recipes')
-def get_top_recipes():
-    try:
-        data = r.get("top_protein_full")
-
-        if data:
-            return jsonify(json.loads(data))
-        else:
-            return jsonify({"error": "No cached data yet"}), 404
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
