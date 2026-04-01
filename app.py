@@ -34,7 +34,7 @@ r = redis.Redis(
 
 # Azure Table Connection
 conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-table_client = TableClient.from_connection_string(conn_str=conn_str, table_name="Users")
+table_client = TableClient.from_connection_string(conn_str=conn_str, table_name="User")
 
 # --- AUTHENTICATION ROUTES (Email/Password) ---
 
@@ -173,19 +173,27 @@ def get_performance_stats():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/analyze_data')
-def protected_data():
-    """Fallback to external API if needed"""
+# Change this to match your script.js API_URL
+@app.route('/api/diet_results', methods=['GET'])
+def get_diet_results():
+    # 1. Check Auth (Your Redis session check)
     if not r.keys("session:*"):
         return jsonify({"error": "Unauthorized"}), 401
     
+    # 2. Call the Azure Analysis API
     azure_url = "https://diet-analysis-api-v2.azurewebsites.net/api/analyze_data"
     try:
         response = requests.get(azure_url)
-        return jsonify(response.json())
-    except:
-        return jsonify({"error": "External API unreachable"}), 502
-
+        
+        # If Azure is still processing (202), tell the frontend
+        if response.status_code == 202:
+            return jsonify({"status": "pending", "message": "Azure is still analyzing the CSV..."}), 202
+            
+        # If Azure is done (200), pass the data through
+        return jsonify(response.json()), 200
+        
+    except Exception as e:
+        return jsonify({"error": f"External API unreachable: {str(e)}"}), 502
 
 @app.route('/api/macros')
 def get_macros():
