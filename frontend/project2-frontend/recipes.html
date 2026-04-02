@@ -3,90 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Top Protein Recipes</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body style="font-family:Segoe UI; background:#f4f7f6; margin:0;">
 
-<header style="background:#28a745; color:white; padding:15px 30px;">
-    <h2>Top Protein Recipes</h2>
+<header style="background:#28a745; color:white; padding:15px 30px; display:flex; justify-content:space-between; align-items:center;">
+    <h2 style="margin:0;">Top Recipes</h2>
+    <a href="index.html" style="color:white; text-decoration:none; font-weight:bold;">← Back to Dashboard</a>
 </header>
 
-<main style="padding:20px;">
-    <div style="text-align:center; margin:20px;">
-    <input id="searchRecipe" placeholder="Search recipe..." style="padding:10px;">
-    <button onclick="fetchRecipes()">Search</button>
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin:20px; justify-content:center;">
+    <input id="searchInput" type="text" placeholder="Search recipes..." 
+        style="padding:10px;border-radius:8px;border:1px solid #ccc;width:200px;">
+
+    <select id="dietFilterRecipes" style="padding:10px;border-radius:8px;">
+        <option value="All">All Diets</option>
+        <option value="dash">Dash</option>
+        <option value="keto">Keto</option>
+        <option value="mediterranean">Mediterranean</option>
+        <option value="paleo">Paleo</option>
+        <option value="vegan">Vegan</option>
+    </select>
+
+    <select id="sortSelect" style="padding:10px;border-radius:8px;">
+        <option value="">Sort By</option>
+        <option value="protein_desc">Protein: High to Low</option>
+        <option value="protein_asc">Protein: Low to High</option>
+        <option value="calories_desc">Calories: High to Low</option>
+        <option value="calories_asc">Calories: Low to High</option>
+    </select>
 </div>
 
 <div id="recipesContainer" style="padding:20px;"></div>
 
-<script>
-let allRecipes = [];
-
-// Load all recipes once
-async function loadRecipes() {
-    try {
-        const res = await fetch("/api/get_recipes");
-        const data = await res.json();
-
-        allRecipes = data;
-        displayRecipes(allRecipes);
-    } catch (err) {
-        console.error("Error loading recipes:", err);
-    }
-}
-
-// Override your existing fetchRecipes (JS-only search)
-function fetchRecipes() {
-    const query = document.getElementById("searchRecipe").value.toLowerCase();
-
-    const filtered = allRecipes.filter(r =>
-        r.Recipe_name.toLowerCase().includes(query)
-    );
-
-    displayRecipes(filtered);
-}
-
-// Override display to match your CSV fields
-function displayRecipes(recipes) {
-    const container = document.getElementById("recipesContainer");
-    container.innerHTML = "";
-
-    if (recipes.length === 0) {
-        container.innerText = "No recipes found";
-        return;
-    }
-
-    recipes.forEach(recipe => {
-        const recipeDiv = document.createElement("div");
-        recipeDiv.style.padding = "10px";
-        recipeDiv.style.border = "1px solid #ccc";
-        recipeDiv.style.margin = "10px 0";
-        recipeDiv.style.borderRadius = "8px";
-
-        recipeDiv.innerHTML = `
-            <h3>${recipe.Recipe_name}</h3>
-            <p>Protein: ${recipe["Protein(g)"]}</p>
-            <p>Diet: ${recipe.Diet_type}</p>
-        `;
-
-        container.appendChild(recipeDiv);
-    });
-}
-
-// Load data on page load
-loadRecipes();
-
-// Optional: search on Enter
-document.getElementById("searchRecipe").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        fetchRecipes();
-    }
-});
-</script>
-</main>
-
 <script src="recipesNEW.js"></script>
-
 </body>
 </html>
