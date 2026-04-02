@@ -1,4 +1,6 @@
+from collections import defaultdict
 import os
+import pandas as pd
 import requests
 import redis
 import json
@@ -8,6 +10,9 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from azure.data.tables import TableClient
 from werkzeug.security import generate_password_hash, check_password_hash
+import azure.functions as func
+
+
 
 # --- CONFIGURATION & ENV SETUP ---
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -146,59 +151,159 @@ def get_top_recipes():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
-@app.route('/api/analyze_data')
-def get_performance_stats():
-    """
-    Performance Lead Task: Fetch pre-calculated data from Redis.
-    This data is populated by the Azure Blob Trigger (function_app.py).
-    """
-    # 1. Security Check
-    if not r.keys("session:*"):
-        return jsonify({"error": "Unauthorized"}), 401
 
+# @app.route('/api/analyze_data')
+# def get_performance_stats():
+#     print("API Endpoint /api/analyze_data called")  # Debugging line to confirm endpoint is hit
+#     # map_csv_to_redis()
+
+#     if not r.keys("session:*"):
+#         return jsonify({"error": "Unauthorized"}), 401
+
+#     try:
+#         keys = r.keys("record:*")
+
+#         if not keys:
+#             return jsonify({
+#                 "status": "empty",
+#                 "message": "No data found in Redis"
+#             }), 404
+
+#         all_data = []
+#         for key in keys:
+#             record = r.hgetall(key)from collections import defaultdict
+
+@app.route('/api/seed_redis')
+def seed_redis():
     try:
-        # 2. Fetch from Cache (The key used in your Blob Trigger)
-        cached_data = r.get("diet_analysis_results")
+        csv_path = os.path.join(basedir, 'All_Diets.csv')
+        df = pd.read_csv(csv_path)
+        df.dropna(subset=['Protein(g)', 'Carbs(g)', 'Fat(g)'], inplace=True)
 
-        if cached_data:
-            # Data is already cleaned and calculated
-            return jsonify(json.loads(cached_data))
-        else:
-            return jsonify({
-                "status": "pending", 
-                "message": "Analysis not ready. Please upload All_Diets.csv to trigger processing."
-            }), 202
+        avg_macros_df = df.groupby('Diet_type').agg({
+            'Protein(g)': 'mean',
+            'Carbs(g)': 'mean',
+            'Fat(g)': 'mean'
+        }).round(2).reset_index()
+
+        avg_macros = {
+            row['Diet_type']: {
+                "Protein(g)": row['Protein(g)'],
+                "Carbs(g)": row['Carbs(g)'],
+                "Fat(g)": row['Fat(g)']
+            }
+            for _, row in avg_macros_df.iterrows()
+        }
+
+        r.set("diet_analysis_results", json.dumps(avg_macros), ex=86400)
+        return jsonify({"status": "ok", "diets_cached": list(avg_macros.keys())}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Change this to match your script.js API_URL
-@app.route('/api/diet_results', methods=['GET'])
-def get_diet_results():
-    # 1. Check Auth (Your Redis session check)
+@app.route('/api/analyze_data')
+def get_performance_stats():
     if not r.keys("session:*"):
         return jsonify({"error": "Unauthorized"}), 401
-    
-    # 2. Call the Azure Analysis API
-    azure_url = "https://diet-analysis-api-v2.azurewebsites.net/api/analyze_data"
+
     try:
-        response = requests.get(azure_url)
-        
-        # If Azure is still processing (202), tell the frontend
-        if response.status_code == 202:
-            return jsonify({"status": "pending", "message": "Azure is still analyzing the CSV..."}), 202
-            
-        # If Azure is done (200), pass the data through
-        return jsonify(response.json()), 200
-        
+        cached_data = r.get("diet_analysis_results")
+
+        if cached_data:
+            data = json.loads(cached_data)
+            # Convert dict format to list format for frontend compatibility
+            result = [
+                {
+                    "Diet_type": diet,
+                    "Protein(g)": macros["Protein(g)"],
+                    "Carbs(g)": macros["Carbs(g)"],
+                    "Fat(g)": macros["Fat(g)"]
+                }
+                for diet, macros in data.items()
+            ]
+            return jsonify(result), 200
+        else:
+            return jsonify({
+                "status": "pending",
+                "message": "Diet data not yet processed. Please upload CSV to Azure Blob."
+            }), 202
+
     except Exception as e:
-        return jsonify({"error": f"External API unreachable: {str(e)}"}), 502
+        print("ERROR:", str(e))
+        return jsonify({"error": str(e)}), 500
+#             all_data.append(record)
 
-@app.route('/api/macros')
-def get_macros():
-    data = r.get("average_macros")
-    return jsonify(json.loads(data)) if data else jsonify({"error": "No data"})
+#         print("Fetched records:", all_data)
 
+#         return jsonify(all_data), 200
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+    
+#def map_csv_to_redis():
+ #   print("Mapping CSV data to Redis...")
+
+  #  basedir = os.path.abspath(os.path.dirname(__file__))
+   # csv_path = os.path.join(basedir, 'All_Diets.csv')
+
+    #df = pd.read_csv(csv_path)
+
+    #for index, row in df.iterrows():
+        # Use index OR a meaningful unique column
+        #unique_id = index  
+        # Example alternative:
+        # unique_id = row["Recipe_name"]
+
+        #redis_key = f"record:{unique_id}"
+
+        # Convert row to dictionary
+        #data_payload = row.to_dict()
+
+        # Store in Redis hash
+        #r.hset(redis_key, mapping=data_payload)
+
+        # Debug confirmation
+        #saved = r.hgetall(redis_key)
+        #print(f"Saved {redis_key}: {saved}")
+
+#def main(myblob: func.InputStream):
+    #print(f"Processing blob: {myblob.name}")
+
+    # Read blob directly
+    #df = pd.read_csv(BytesIO(myblob.read()))
+
+    #all_data = df.to_dict(orient="records")
+
+    # Save to Redis
+   # r.set("diet_analysis_results", json.dumps(all_data))
+
+    #print("Data pushed to Redis")
+
+# Change this to match your script.js API_URL
+@app.route('/api/diet_results')
+def get_diet_results():
+
+    if not r.keys("session:*"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        cached_data = r.get("diet_analysis_results")
+
+        if cached_data:
+            data = json.loads(cached_data)
+            print("FROM REDIS:", data)  # debug
+            return jsonify(data), 200
+
+        else:
+            return jsonify({
+                "status": "pending",
+                "message": "No cached data found. Upload CSV to Azure Blob."
+            }), 202
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
