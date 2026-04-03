@@ -122,6 +122,20 @@ def callback():
         r.set(f"session:{username}", "active", ex=3600)
     
     return redirect('/')
+@app.route('/api/current_user')
+def current_user():
+    session_keys = r.keys("session:*")
+    if not session_keys:
+        return jsonify({"error": "Not logged in"}), 401
+    
+    # Strip "session:" prefix to get the actual username/email
+    username = session_keys[0].replace("session:", "")
+    
+    # If it's an email, just show the part before @
+    if "@" in username:
+        username = username.split("@")[0]
+    
+    return jsonify({"username": username})
 
 @app.route('/logout')
 def logout():

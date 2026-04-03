@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body style="background: #f4f7f6; margin: 0; font-family: 'Segoe UI', sans-serif;">
-
     <header style="background: #007BFF; color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <h1 style="margin: 0; font-size: 1.5rem;">Nutritional Insights</h1>
+          <span id="usernameDisplay" style="color:white; font-weight:bold;"></span>  <!-- ADD THIS -->
         <div id="authSection">
             <a href="/logout" id="logoutBtn" style="background: #d9534f; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
                 Sign Out
@@ -22,27 +22,32 @@
     <main style="padding: 20px;">
         <section id="chartsContainer" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
             <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; width: 45%; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 350px;">
-                <h3>Macronutrient Bar Chart</h3>
+                <h3>Bar Chart</h3>
                 <canvas id="barChart"></canvas>
             </div>
             <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; width: 45%; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 350px;">
-                <h3>Protein vs Carbs</h3>
+                <h3>Scatter Plot</h3>
                 <canvas id="scatterChart"></canvas>
             </div>
             <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; width: 45%; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 350px;">
-                <h3>Recipe Distribution (Pie)</h3>
+                <h3>Heat Map</h3>
+                <canvas id="heatMapChart"></canvas>
+            </div>
+            <div class="chart-card" style="background: white; padding: 20px; border-radius: 12px; width: 45%; min-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: 350px;">
+                <h3>Pie Chart</h3>
                 <canvas id="pieChart"></canvas>
             </div>
+            
         </section>
 
         <section style="text-align: center; margin: 40px 0;">
             <select id="dietFilter" style="padding: 12px; border-radius: 8px; width: 250px; margin-bottom: 20px;">
                 <option value="All">All Diet Types</option>
-                <option value="Dash">Dash</option>
-                <option value="Keto">Keto</option>
-                <option value="Mediterranean">Mediterranean</option>
-                <option value="Paleo">Paleo</option>
-                <option value="Vegan">Vegan</option>
+                <option value="dash">Dash</option>
+                <option value="keto">Keto</option>
+                <option value="mediterranean">Mediterranean</option>
+                <option value="paleo">Paleo</option>
+                <option value="vegan">Vegan</option>
             </select>
             
             <div style="display: flex; justify-content: center; gap: 15px;">
@@ -60,7 +65,9 @@
             <section>
                 <h3>Cloud Resource Cleanup</h3>
                 <div class="card">
-                    <p>Ensure resources are managed properly</p>
+                    <p>Ensure that cloud resources are efficiently managed and cleaned up post-deployment.
+
+</p>
                     <button id="cleanupBtn" class="btn btn-red">Clean Up Resources</button>
                 </div>
             </section>
@@ -75,7 +82,7 @@
                 </div>
             </section>
 
-        <footer>© 2026 Nutritional Insights</footer>
+        <footer>© 2026 Nutritional Insights All rights reserved</footer>
     </main>
 <!-- 
     <script>

@@ -16,6 +16,14 @@ function updateAuthUI(isLoggedIn) {
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) logoutBtn.style.display = isLoggedIn ? "flex" : "none";
 }
+async function loadUsername() {
+    const res = await fetch('/api/current_user');
+    if (res.ok) {
+        const data = await res.json();
+        document.getElementById('usernameDisplay').innerText = `Welcome, ${data.username}`;
+    }
+}
+loadUsername();
 
 async function fetchAPIData() {
     const statusDiv = document.getElementById("displayContent");
