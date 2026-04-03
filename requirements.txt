@@ -1,8 +1,10 @@
-pandas
-matplotlib
-seaborn
-azure-functions
-azure-storage-blob
+flask
+flask-cors
 redis
-
+pandas
+requests
+azure-data-tables
+azure-storage-blob
+werkzeug
+python-dotenv
 gunicorn
