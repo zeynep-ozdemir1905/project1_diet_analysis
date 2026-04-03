@@ -1,5 +1,5 @@
 const BASE_API = "";
-const API_URL = `${BASE_API}/analyze_data`;
+const API_URL = `${BASE_API}/api/analyze_data`;
 
 let barChart, scatterChart, pieChart;
 let cachedData = [];
@@ -83,7 +83,7 @@ async function fetchExtraData(endpoint, title) {
     const displayContent = document.getElementById("displayContent");
 
     try {
-        const response = await fetch(`${BASE_API}/${endpoint}`);
+        const response = await fetch(`${BASE_API}/api/${endpoint}`);
 
         if (response.status === 401) {
             alert("Session expired. Please log in again.");
