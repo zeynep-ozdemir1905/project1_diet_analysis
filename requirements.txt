@@ -10,3 +10,8 @@ python-dotenv
 gunicorn
 azure-functions
 azure-functions
+redis
+flask-cors
+azure-data-tables
+requests
+pandas
