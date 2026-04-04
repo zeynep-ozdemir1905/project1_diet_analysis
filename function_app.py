@@ -82,7 +82,7 @@ def process_diet_data(myblob: func.InputStream):
             for _, row in avg_macros_df.iterrows()
         }
 
-        r.set("diet_analysis_results", json.dumps(avg_macros), ex=86400)  # 24hr TTL
+        r.set("diet_analysis_results", json.dumps(avg_macros))  # 24hr TTL
         logging.info(f"SUCCESS: {len(avg_macros)} diet types written to Redis")
 
     except Exception as e:

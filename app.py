@@ -211,7 +211,7 @@ def seed_redis():
             for _, row in avg_macros_df.iterrows()
         }
 
-        r.set("diet_analysis_results", json.dumps(avg_macros), ex=86400)
+        r.set("diet_analysis_results", json.dumps(avg_macros))
         return jsonify({"status": "ok", "diets_cached": list(avg_macros.keys())}), 200
 
     except Exception as e:
