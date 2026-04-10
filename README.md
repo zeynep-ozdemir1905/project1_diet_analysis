@@ -7,3 +7,6 @@ https://dietstoragezeynep17732.z1.web.core.windows.net/
 
 Project 3 Azure Link 
 https://nutritional-insights-zeynep.azurewebsites.net/ 
+
+
+the links wont work, talked with the instructor, therefore, cleaning up my azure account - zeynep
